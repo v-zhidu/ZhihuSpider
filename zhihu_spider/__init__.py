@@ -3,6 +3,9 @@ ZhihuSpider is a data robot for Zhihu.com
 
 __init__.py create by v-zhidu
 """
+
+import logging
+
 from .zhihu_spider import ZhihuSpider
 
 __version__ = '0.1.0'
