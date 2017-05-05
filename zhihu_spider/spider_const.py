@@ -7,5 +7,5 @@ spider_const.py create by v-zhidu
 
 
 ZHIHU_HOST = 'https://www.zhihu.com'
-ZHIHU_TOPICS = '/topics'
-ZHIHU_TOPIC_LIST_API = '/node/TopicsPlazzaListV2'
+ZHIHU_TOPICS = ZHIHU_HOST + '/topics'
+ZHIHU_TOPIC_LIST_API = ZHIHU_HOST + '/node/TopicsPlazzaListV2'

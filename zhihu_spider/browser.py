@@ -92,13 +92,12 @@ class Browser(object):
         Raises:
              The input args must be int type.
         """
-        url = SpiderConst.ZHIHU_HOST + SpiderConst.ZHIHU_TOPIC_LIST_API
+        url = SpiderConst.ZHIHU_TOPIC_LIST_API
 
         try:
             if delay:
                 time.sleep(delay)
 
-            self._logger.debug('请求地址 %s', url)
             self._headers['content-type'] = 'application/x-www-form-urlencoded charset=UTF-8'
 
             data = {'method': 'next'}

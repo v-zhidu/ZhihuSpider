@@ -23,20 +23,20 @@ class SpiderParser(object):
     """
 
     @staticmethod
-    def find_root_topic(html):
+    def find_seed_topic(html):
         """
         根节点目录的解析方法，在topics页获取所有父级话题以及链接
         """
         logger.debug('查找所有根话题...')
         soup = BeautifulSoup(html, 'html5lib')
 
-        topics = []
-        for item in soup.find_all('li', class_='zm-topic-cat-item'):
-            topic = {'id': item['data-id'], 'name': item.contents[0].string,
-                     'url': item.contents[0]['href']}
-            topics.append(topic)
+        def get(tag):
+            """
+            在tag中获取topic
+            """
+            return dict(id=tag['data-id'], name=tag.contents[0].string, url=tag.contents[0]['href'])
 
-        return topics
+        return reduce(get, soup.find_all('li', class_='zm-topic-cat-item'))
 
     @staticmethod
     def find_topic(json_data):
@@ -67,8 +67,8 @@ class SpiderParser(object):
 
         topics = []
         for item in soup.find_all('div', class_='blk'):
-            topic = {'id': item.a['href'][-8:],
-                     'name': item.a.strong.string, 'url': item.a['href']}
+            topic = dict(id=item.a['href'][-8:],
+                         name=item.a.strong.string, url=item.a['href'])
             topics.append(topic)
 
         return topics

@@ -1,6 +1,8 @@
 # !-*- encoding=utf-8 -*-
 """
-爬虫模块主程序入口
+Zhihu-Spider Module.
+
+Find topic information from zhihu.com
 
 zhihu_spider.py create by v-zhidu
 """
@@ -12,40 +14,24 @@ from spider_logging import SpiderLogging
 
 class ZhihuSpider(object):
     """
-    知乎爬虫函数
-    调度函数
-    Public Attributes
+    Application Entry
     """
 
     def __init__(self):
         self._logger = SpiderLogging(ZhihuSpider.__name__).logger
 
-    @property
-    def logger(self):
-        """返回logger实例
-        """
-        return self._logger
-
     def topics(self):
-        """Summary of method here.
-
-        Logger method information
-
-        Args:
-             An integer list.
-        Returns:
-             The sum of an integer list.
-        Raises:
-             The input args must be int type.
+        """
+        Get all topics.
         """
         topic = CrawlTopic()
 
-        zhihu_spider.logger.info('开始抓取知乎话题数据')
+        self._logger.info('Release spider!!!')
         topic.run()
+        self._logger.info('Done!')
 
 
 if __name__ == '__main__':
     zhihu_spider = ZhihuSpider()
 
     zhihu_spider.topics()
-    zhihu_spider.logger.info('成功')

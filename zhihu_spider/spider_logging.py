@@ -60,7 +60,7 @@ class SpiderLogging(object):
 
         # 控制台handler
         log_folder = './log/'
-        logfile = 'log.txt'
+        logfile = 'spider.log'
         # 检查文件夹是否存在
         import os
 
@@ -69,12 +69,11 @@ class SpiderLogging(object):
 
         file_handler = logging.FileHandler(
             os.path.join(log_folder, logfile), mode='w')
-        file_handler.setLevel(logging.INFO)
+        file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
 
         # 添加handler
         self._logger.addHandler(file_handler)
-        pass
 
 
 if __name__ == '__main__':
