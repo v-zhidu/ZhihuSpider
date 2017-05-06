@@ -13,15 +13,17 @@ from spider_decorators import log_url
 from spider_logging import SpiderLogging
 from spider_parser import SpiderParser
 from spider_persistence import SpiderPersistence
+from spider_queue import SpiderQueue
 
 
 class CrawlTopic(object):
     """
-    Crawl Topic Class.
+    话题抓取类
     """
 
     def __init__(self):
         self._browser = Browser()
+        self._queue = SpiderQueue()
         self._persistence = SpiderPersistence()
         self._logger = SpiderLogging(CrawlTopic.__name__).logger
 
@@ -40,17 +42,13 @@ class CrawlTopic(object):
         """
         response = self._browser.get(url)
 
-        if response is None:
-            self._logger.error('响应数据错误, url: ' + url)
-            raise ValueError('Invalid response, url=' + url)
-
         self._logger.debug('解析数据......')
-        root_topics = SpiderParser.find_seed_topic(response.read())
-        self._logger.info('获取到%s个根节点话题', len(root_topics))
+        seed_topics = SpiderParser.find_seed_topic(response.read())
+        self._logger.info('获取到%s个根节点话题', len(seed_topics))
 
-        return root_topics
+        return seed_topics
 
-    def get_topic_by_id(self, seed_topic):
+    def get_topic_by_id(self, seed_topic_id, seed_topic_name):
         """根据根话题id获取所有子话题
 
         调用知乎话题列表分页接口获取到所有子话题
@@ -62,42 +60,45 @@ class CrawlTopic(object):
         Raises:
              ValueError: 响应数据为空
         """
-        all_topics = []
-        failed_requests = []
+        url = SpiderConst.ZHIHU_TOPIC_LIST_API
 
-        def _get_topic_by_id(off_set):
-            try:
-                return _get_topic_offset(off_set)
-            except ValueError as ex:
-                failed_requests.append(
-                    dict(id=seed_topic['id'], name=seed_topic['name'], off_set=off_set, err_msg=ex.message))
+        all_topics = {}
+
+        def _off_set_generator(max_count):
+            off_set = 20
+            while off_set <= max_count:
+                yield off_set
+                off_set = off_set + 20
 
         def _get_topic_offset(off_set):
-            response = self._browser.topic_list(seed_topic['id'], off_set)
+            response = self._browser.topic_list(url, seed_topic_id, off_set)
 
             if response is None:
-                self._logger.error('响应数据错误, topic: ' + seed_topic['name'])
-                raise ValueError('响应数据错误, topic: ' + seed_topic['name'])
+                self._logger.error('响应数据错误, topic: ' + seed_topic_name)
+                # TODO(du_zhi_qiang@163.com): 失败后处理
             else:
                 return SpiderParser.find_topic(response.read())
 
         self._logger.debug(
-            '%s -> %s', seed_topic['name'], SpiderConst.ZHIHU_TOPICS + seed_topic['url'])
+            '%s -> %s', seed_topic_name, SpiderConst.ZHIHU_TOPICS + '#' + seed_topic_name)
 
-        for off_set in (x * 20 for x in range(1, 100)):
-            result = _get_topic_by_id(off_set)
+        g = _off_set_generator(SpiderConst.TOPIC_OFF_SET_MAX)
+        try:
+            while True:
+                off_set = g.next()
+                result = _get_topic_offset(off_set)
 
-            if len(result) is 0:
-                self._logger.info('Done! count=%d', len(all_topics))
-                break
-            else:
-                self._logger.debug(off_set)
-                map(all_topics.append, result)
+                if len(result) is 0:
+                    raise StopIteration()
+                else:
+                    self._logger.debug(off_set)
+                    all_topics = dict(all_topics.items() + result.items())
+        except StopIteration:
+            self._logger.info('Done! count=%d', len(all_topics))
 
-        self._persistence.save_failed_request(failed_requests)
         return all_topics
 
-    def download_topic_detail(self, root_topic_name, topic):
+    def download_topic_detail(self, url):
         """Summary of method here.
 
         Logger method information
@@ -109,34 +110,37 @@ class CrawlTopic(object):
         Raises:
              The input args must be int type.
         """
-        response = self._browser.get(SpiderConst.ZHIHU_HOST + topic['url'])
+        response = self._browser.get(url)
 
         if response is None:
-            self._logger.error('响应数据错误, url: ' + topic['url'])
+            self._logger.error('响应数据错误, url: ' + url)
 
         self._persistence.save_topic_detail(
-            root_topic_name, topic, response.read())
+            str(url).split('/')[4], response.read())
 
-    def find_topic_detail_and_download(self, seed_topic):
+    def push_topic_detail_url(self, seed_topic_id, seed_topic_name):
         """
         search all topic by a seed topic.
         """
-        self._logger.info('search %s', seed_topic['name'])
-        data = self.get_topic_by_id(seed_topic)
-        for item in data:
-            self.download_topic_detail(seed_topic['name'], item)
-        self._logger.info('%s have %d child topic',
-                          seed_topic['name'], len(data))
+        self._logger.info('search %s', seed_topic_name)
+        data = self.get_topic_by_id(seed_topic_id, seed_topic_name)
+        for item in data.itervalues():
+            self._queue.add_unvisited_url(SpiderConst.ZHIHU_HOST + item['url'])
 
     def run(self):
         """
         Control the process.
         """
-        seed_topics = self.get_seed_topics(
-            SpiderConst.ZHIHU_HOST + SpiderConst.ZHIHU_TOPICS)
-
+        seed_topics = self.get_seed_topics(SpiderConst.ZHIHU_TOPICS)
         # 遍历查找所有话题路径
-        map(self.find_topic_detail_and_download, seed_topics)
+        for seed_id, seed in seed_topics.items():
+            self.push_topic_detail_url(seed_id, seed['name'])
+
+        # 下载页面
+        # while unvisited_url_empty
+        #     url_to_do = self._queue.pop_unvisited_url()
+        #     self.download_topic_detail(url_to_do)
+        #     self._queue.add_visited_url(url_to_do)
 
     @property
     def browser(self):
@@ -150,5 +154,4 @@ if __name__ == '__main__':
 
     c = CrawlTopic()
 
-    map(c.find_topic_detail_and_download, [
-        {'id': '253', 'name': '游戏', 'url': '#游戏'}])
+    a = c.get_seed_topics(SpiderConst.ZHIHU_TOPICS)

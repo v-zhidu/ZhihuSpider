@@ -21,7 +21,7 @@
     "workbench.colorTheme": "Solarized Dark",
     "workbench.iconTheme": "material-icon-theme",
     "editor.wordWrapColumn": 120,
-    "editor.fontSize": 14,
+    "editor.fontSize": 16,
     "files.trimTrailingWhitespace": true,
     "window.zoomLevel": 0,
     "zenMode.hideStatusBar": false,

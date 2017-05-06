@@ -12,13 +12,13 @@ from crawl_topic import CrawlTopic
 from spider_logging import SpiderLogging
 
 
-class ZhihuSpider(object):
+class StartUp(object):
     """
     Application Entry
     """
 
     def __init__(self):
-        self._logger = SpiderLogging(ZhihuSpider.__name__).logger
+        self._logger = SpiderLogging(StartUp.__name__).logger
 
     def topics(self):
         """
@@ -32,6 +32,6 @@ class ZhihuSpider(object):
 
 
 if __name__ == '__main__':
-    zhihu_spider = ZhihuSpider()
+    zhihu_spider = StartUp()
 
     zhihu_spider.topics()
