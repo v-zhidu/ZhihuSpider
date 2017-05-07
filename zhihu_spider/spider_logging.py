@@ -30,7 +30,7 @@ class SpiderLogging(object):
         """
         配置日志的具体方法
         """
-        self._logger.setLevel(logging.DEBUG)
+        self._logger.setLevel(logging.INFO)
         self.configure_console_handler()
         self.configure_file_handler()
 

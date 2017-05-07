@@ -12,7 +12,7 @@ import json
 from bs4 import BeautifulSoup
 
 from spider_logging import SpiderLogging
-
+from topic import Topic
 logger = SpiderLogging('ContentParser').logger
 
 
@@ -30,11 +30,10 @@ class SpiderParser(object):
         logger.debug('查找所有根话题...')
         soup = BeautifulSoup(html, 'lxml')
 
-        topics = {}
+        topics = []
         for tag in soup.find_all('li', class_='zm-topic-cat-item'):
-            seed_id = tag['data-id']
-            topics[seed_id] = dict(
-                name=tag.contents[0].string, url=tag.contents[0]['href'])
+            topics.append(Topic(tag['data-id'], tag.contents[0].string,
+                                tag.contents[0]['href']))
 
         return topics
 
@@ -65,10 +64,8 @@ class SpiderParser(object):
         """
         soup = BeautifulSoup(html, 'lxml')
 
-        topics = {}
+        topics = []
         for item in soup.find_all('div', class_='blk'):
-
-            topic_id = item.a['href'][-8:]
-            topics[topic_id] = dict(
-                name=item.a.strong.string, url=item.a['href'])
+            topics.append(Topic(item.a['href'][-8:],
+                                item.a.strong.string, item.a['href']))
         return topics

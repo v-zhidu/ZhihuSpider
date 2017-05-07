@@ -58,6 +58,12 @@ class SpiderQueueBase(object):
         """
         pass
 
+    def get_visited_url_num(self):
+        """
+        返回访问的url数目
+        """
+        pass
+
     @abstractmethod
     def pop_unvisited_url(self):
         """

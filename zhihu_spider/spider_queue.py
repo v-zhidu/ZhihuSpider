@@ -73,6 +73,12 @@ class SpiderQueue(SpiderQueueBase):
             self._logger.debug('add url into unvisited: %s', url)
             self._unvisited_url.append(url)
 
+    def get_unvisited_url_num(self):
+        """
+        返回未访问的url数目
+        """
+        return len(self._unvisited_url)
+
     def get_visited_url_num(self):
         """
         返回访问的url数目
@@ -89,4 +95,4 @@ class SpiderQueue(SpiderQueueBase):
         """
         判断未访问的url队列是否为空
         """
-        return self._unvisited_url.count == 0
+        return len(self._unvisited_url) == 0
