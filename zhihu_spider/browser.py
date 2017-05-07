@@ -7,13 +7,12 @@ browser.py create by v-zhidu
 
 from __future__ import unicode_literals
 
-import json
+
 import time
 import urllib
 import urllib2
 
 from spider_logging import SpiderLogging
-import spider_const as SpiderConst
 
 
 class Browser(object):

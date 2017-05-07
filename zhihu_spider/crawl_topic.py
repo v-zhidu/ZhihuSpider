@@ -16,6 +16,7 @@ from spider_parser import SpiderParser
 from spider_persistence import SpiderPersistence
 from spider_queue import SpiderQueue
 from spider_decorators import retry
+from topic import Topic
 
 
 class CrawlTopic(object):
@@ -86,23 +87,25 @@ class CrawlTopic(object):
         self._logger.debug(
             '%s -> %s', seed_topic.name, SpiderConst.ZHIHU_TOPICS + '#' + seed_topic.name)
 
-        all_topics = []
+        topics = []
         g = _off_set_generator(SpiderConst.TOPIC_OFF_SET_MAX)
         try:
             while True:
                 off_set = g.next()
                 result = _find_topic_offset()
+                size = len(result)
 
-                if len(result) is 0:
-                    raise StopIteration()
+                if size > 0:
+                    topics.extend(result)
+                    self._logger.info(size)
                 else:
-                    if all_topics is not None:
-                        all_topics.extend(result)
-                        self._logger.info(off_set)
+                    raise StopIteration()
         except StopIteration:
-            self._logger.info('Done! count=%d', len(all_topics))
+            for i in topics:
+                self._logger.info('id=%s name=%s', i.id, i.name)
+            self._logger.info('Done! count=%d', len(topics))
 
-        return all_topics
+        return topics
 
     def download_topic_detail(self, url, save_file=False):
         """
@@ -167,4 +170,4 @@ class CrawlTopic(object):
 if __name__ == '__main__':
 
     c = CrawlTopic()
-    c.run()
+    c.find_topic_by_id(Topic(395, '投资', '#投资'))
