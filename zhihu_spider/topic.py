@@ -14,11 +14,10 @@ class Topic(object):
     """
     __slots__ = ('_id', '_name', '_url', '_html')
 
-    def __init__(self, topic_id, name, url, html=None):
+    def __init__(self, topic_id, name, url):
         self._id = topic_id
         self._name = name
         self._url = url
-        self._html = html
 
     def __str__(self):
         return u'topic: %s -> %s -> %s' % (self._id, self._name, self._url)
@@ -65,16 +64,13 @@ class Topic(object):
         """
         self._url = value
 
-    @property
-    def html(self):
+    @staticmethod
+    def topic_to_json(topic):
         """
-        获取话题页面
+        对象序列化方法
         """
-        return self._html
-
-    @url.setter
-    def url(self, value):
-        """
-        设置话题页面
-        """
-        self._url = value
+        return {
+            'id': topic.id,
+            'name': topic.name,
+            'url': topic.url
+        }

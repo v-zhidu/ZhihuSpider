@@ -7,17 +7,17 @@ crawl_topic.py create by v-zhidu
 
 from __future__ import unicode_literals
 
+import json
 from urlparse import urljoin
 
+from queue import SpiderQueueRedis
 import spider_const as SpiderConst
 from browser import Browser
+from persisitence import SpiderRedis
 from spider_decorators import retry
 from spider_logging import SpiderLogging
 from spider_parser import SpiderParser
-from spider_persistence import SpiderPersistence
 from topic import Topic
-
-from queue.spider_queue import SpiderQueue
 
 
 class CrawlTopic(object):
@@ -27,8 +27,8 @@ class CrawlTopic(object):
 
     def __init__(self):
         self._browser = Browser()
-        self._queue = SpiderQueue()
-        self._persistence = SpiderPersistence()
+        self._queue = SpiderQueueRedis()
+        self._persistence = SpiderRedis()
         self._logger = SpiderLogging(CrawlTopic.__name__).logger
 
     def find_seed_topics(self):
@@ -67,7 +67,7 @@ class CrawlTopic(object):
         """
         def _off_set_generator(max_count):
             off_set = 0
-            while off_set <= max_count:
+            while off_set < max_count:
                 yield off_set
                 off_set = off_set + 20
 
@@ -108,29 +108,29 @@ class CrawlTopic(object):
 
         return topics
 
-    def save_topic_detail(self, file_name, html):
-        """
-        持久化话题详情数据
-        """
-        # 文件实现
-        path = './data/topics/%s.html' % (file_name)
-        self._logger.debug('download file: %s.html', file_name)
-        self._persistence.save_to_file(path, html)
+    # def save_topic_detail(self, file_name, html):
+    #     """
+    #     持久化话题详情数据
+    #     """
+    #     # 文件实现
+    #     path = './data/topics/%s.html' % (file_name)
+    #     self._logger.debug('download file: %s.html', file_name)
+    #     self._persistence.save_to_file(path, html)
 
-    def download_topic_detail(self, url, save_file=False):
-        """
-        下载话题详情页面
-        """
-        response = self._browser.get(url)
+    # def download_topic_detail(self, url, save_file=False):
+    #     """
+    #     下载话题详情页面
+    #     """
+    #     response = self._browser.get(url)
 
-        if response is None:
-            self._logger.error('响应数据错误, url: ' + url)
+    #     if response is None:
+    #         self._logger.error('响应数据错误, url: ' + url)
 
-        # 持久化
-        if save_file:
-            self.save_topic_detail(
-                str(url).split('/')[4], response.read())
-        return response.read()
+    #     # 持久化
+    #     if save_file:
+    #         self.save_topic_detail(
+    #             str(url).split('/')[4], response.read())
+    #     return response.read()
 
     def run(self):
         """
@@ -146,6 +146,8 @@ class CrawlTopic(object):
             self._logger.info('search %s', seed.name)
             topics = self.find_topic_by_id(seed)
             for topic in topics:
+                self._persistence.rpush(
+                    SpiderConst.TOPICS_LIST, json.dumps(topic, default=Topic.topic_to_json, ensure_ascii=False))
                 self._queue.add_unvisited_url(
                     urljoin(SpiderConst.ZHIHU_HOST, topic.url))
 
@@ -154,8 +156,6 @@ class CrawlTopic(object):
         all_topics = reduce(lambda x, y: x + y, map(_find, seed_topics))
         self._logger.info('topics all count -> %s', len(all_topics))
 
-        print self._queue.get_unvisited_url_num()
-        print self._queue.get_visited_url_num()
         # 下载页面
         # while self._queue.unvisited_url_empty():
         #     url_to_do = self._queue.pop_unvisited_url()
