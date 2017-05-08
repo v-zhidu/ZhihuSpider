@@ -54,6 +54,36 @@ class SpiderRedis(object):
         """
         return self._client.llen(name)
 
+    def sadd(self, name, value):
+        """
+        存为集合
+        """
+        return self._client.sadd(name, value)
+
+    def sismember(self, name, value):
+        """
+        检查一个元素是否在集合中
+        """
+        return self._client.sismember(name, value)
+
+    def srem(self, name, value):
+        """
+        移除集合中的元素，返回移除的元素数量
+        """
+        return self._client.srem(name, value)
+
+    def scard(self, name):
+        """
+        返回元素数量
+        """
+        return self._client.scard(name)
+
+    def hset(self, hash_key, sub_key, value):
+        """
+        存为散列
+        """
+        return self._client.hset(hash_key, sub_key, value)
+
 
 if __name__ == '__main__':
     re = SpiderRedis()

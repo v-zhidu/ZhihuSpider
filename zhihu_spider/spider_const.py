@@ -11,5 +11,7 @@ ZHIHU_TOPICS = ZHIHU_HOST + '/topics'
 ZHIHU_TOPIC_LIST_API = ZHIHU_HOST + '/node/TopicsPlazzaListV2'
 TOPIC_OFF_SET_MAX = 20
 
-TOPICS_LIST = 'list.topics'
-TOPICS_QUEUE_UNVISITED = 'queue.unvisited'
+TOPICS_HTML = 'list:topics:html'
+TOPICS_LIST = 'list:topics:info'
+TOPICS_QUEUE_UNVISITED = 'queue:unvisited'
+TOPICS_SET_VISITED = 'set:visited'
