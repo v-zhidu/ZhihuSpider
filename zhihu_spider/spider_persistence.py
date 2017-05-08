@@ -21,15 +21,6 @@ class SpiderPersistence(object):
     def __init__(self):
         self._logger = SpiderLogging(SpiderPersistence.__name__).logger
 
-    def save_topic_detail(self, file_name, html):
-        """
-        持久化话题详情数据
-        """
-        # 文件实现
-        path = './data/topics/%s.html' % (file_name)
-        self._logger.debug('download file: %s.html', file_name)
-        self.save_to_file(path, html)
-
     @staticmethod
     def save_to_file(file_path, data, is_serialize=False):
         """

@@ -11,12 +11,13 @@ from urlparse import urljoin
 
 import spider_const as SpiderConst
 from browser import Browser
+from spider_decorators import retry
 from spider_logging import SpiderLogging
 from spider_parser import SpiderParser
 from spider_persistence import SpiderPersistence
-from spider_queue import SpiderQueue
-from spider_decorators import retry
 from topic import Topic
+
+from queue.spider_queue import SpiderQueue
 
 
 class CrawlTopic(object):
@@ -65,7 +66,7 @@ class CrawlTopic(object):
              ValueError: 响应数据为空
         """
         def _off_set_generator(max_count):
-            off_set = 20
+            off_set = 0
             while off_set <= max_count:
                 yield off_set
                 off_set = off_set + 20
@@ -97,7 +98,7 @@ class CrawlTopic(object):
 
                 if size > 0:
                     topics.extend(result)
-                    self._logger.info(size)
+                    self._logger.info(len(topics))
                 else:
                     raise StopIteration()
         except StopIteration:
@@ -106,6 +107,15 @@ class CrawlTopic(object):
             self._logger.info('Done! count=%d', len(topics))
 
         return topics
+
+    def save_topic_detail(self, file_name, html):
+        """
+        持久化话题详情数据
+        """
+        # 文件实现
+        path = './data/topics/%s.html' % (file_name)
+        self._logger.debug('download file: %s.html', file_name)
+        self._persistence.save_to_file(path, html)
 
     def download_topic_detail(self, url, save_file=False):
         """
@@ -118,7 +128,7 @@ class CrawlTopic(object):
 
         # 持久化
         if save_file:
-            self._persistence.save_topic_detail(
+            self.save_topic_detail(
                 str(url).split('/')[4], response.read())
         return response.read()
 
