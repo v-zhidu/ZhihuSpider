@@ -168,6 +168,9 @@ class CrawlTopic(object):
         """
         seed_topics = self.find_seed_topics()
         # 遍历查找所有话题路径
+        for topic in seed_topics:
+            self._persistence.sadd(SpiderConst.TOPICS_SEED, json.dumps(
+                topic, default=Topic.topic_to_json, ensure_ascii=False))
 
         def _find(seed):
             """

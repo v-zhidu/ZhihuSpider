@@ -7,7 +7,7 @@ browser.py create by v-zhidu
 
 from __future__ import unicode_literals
 
-
+import socket
 import time
 import urllib
 import urllib2
@@ -25,7 +25,7 @@ class Browser(object):
          An integer count of the eggs we have laid.
     """
 
-    def __init__(self):
+    def __init__(self, timeout=10):
         self._headers = {
             'Host': 'www.zhihu.com',
             'Connection': 'keep-alive',
@@ -35,6 +35,14 @@ class Browser(object):
             'Accept-Language': 'zh-CN, zh; q=0.8, en; q=0.6'
         }
         self._logger = SpiderLogging(Browser.__name__).logger
+
+        # 设置代理
+        proxy = urllib2.ProxyHandler({'http': '119.57.117.41:8080'})
+        opener = urllib2.build_opener(proxy)
+        urllib2.install_opener(opener)
+
+        # 设置全局超时
+        socket.setdefaulttimeout(timeout)
 
     @property
     def header(self):
@@ -51,7 +59,7 @@ class Browser(object):
         '''
         return self._headers
 
-    def get(self, url, delay=0, timeout=10):
+    def get(self, url, delay=0):
         """Get方式打开链接
 
         通过Get方式打开链接，无登陆验证
@@ -69,7 +77,7 @@ class Browser(object):
                 time.sleep(delay)
 
             self._logger.debug('请求地址 %s', url)
-            response = urllib2.urlopen(url, data=None, timeout=timeout)
+            response = urllib2.urlopen(url, data=None)
 
             return response
         except urllib2.HTTPError as e:
@@ -79,7 +87,7 @@ class Browser(object):
             self._logger.error(
                 'URLError - message=%s url=%s', e.reason, url)
 
-    def topic_list(self, url, topic_id, off_set=0, timeout=10, delay=0):
+    def topic_list(self, url, topic_id, off_set=0, delay=0):
         """Summary of method here.
 
         Logger method information
@@ -103,7 +111,7 @@ class Browser(object):
 
             data = urllib.urlencode(data)
             request = urllib2.Request(url, data)
-            response = urllib2.urlopen(request, timeout=timeout)
+            response = urllib2.urlopen(request)
 
             return response
         except urllib2.HTTPError as e:
