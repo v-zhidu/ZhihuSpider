@@ -8,6 +8,8 @@ crawl_topic.py create by v-zhidu
 from __future__ import unicode_literals
 
 import json
+import threading
+import time
 from urlparse import urljoin
 
 import spider_const as SpiderConst
@@ -143,7 +145,7 @@ class CrawlTopic(object):
             self.save_topic_to_database(url, response.read())
         return response.read()
 
-    def download(self, save_file=False):
+    def consumer(self, save_file=False):
         """
         抓取
         """
@@ -160,9 +162,10 @@ class CrawlTopic(object):
                 else:
                     self._queue.add_visited_url(url_to_do)
             else:
-                self._logger.info('没有要抓取的页面啦')
+                # self._logger.info('没有要抓取的页面啦')
+                pass
 
-    def find(self):
+    def producer(self):
         """
         Control the process.
         """
@@ -187,13 +190,24 @@ class CrawlTopic(object):
             return topics
 
         all_topics = reduce(lambda x, y: x + y, map(_find, seed_topics))
+        # 测试用
+        # all_topics = reduce(lambda x, y: x + y, map(_find,
+        #                                             [Topic(topic_id=253, name='游戏', url='#游戏')]))
         self._logger.info('topics all count -> %s', len(all_topics))
 
     def run_multiprocess(self):
         """
         并发处理
         """
-        self.find()
+        self._logger.info('start process...')
+        producer = threading.Thread(target=self.producer)
+        consumer = threading.Thread(target=self.consumer)
+        producer.start()
+        consumer.start()
+
+        producer.join()
+        consumer.join()
+        self._logger.info('end process')
 
     @property
     def browser(self):
@@ -213,4 +227,5 @@ class CrawlTopic(object):
 if __name__ == '__main__':
 
     c = CrawlTopic()
-    c.run_multiprocess()
+    # c.run_multiprocess()
+    c.consumer()
