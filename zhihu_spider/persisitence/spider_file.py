@@ -13,13 +13,13 @@ import os
 from spider_logging import SpiderLogging
 
 
-class SpiderPersistence(object):
+class SpiderFile(object):
     """
     持久化类
     """
 
     def __init__(self):
-        self._logger = SpiderLogging(SpiderPersistence.__name__).logger
+        self._logger = SpiderLogging(SpiderFile.__name__).logger
 
     @staticmethod
     def save_to_file(file_path, data, is_serialize=False):
@@ -43,4 +43,4 @@ if __name__ == '__main__':
 
     d = dict(id=1, name='a', url='#a')
 
-    SpiderPersistence.save_to_file('./data/error.txt', d, True)
+    SpiderFile.save_to_file('./data/error.txt', d, True)

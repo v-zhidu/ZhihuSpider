@@ -12,7 +12,7 @@ spider_queue_base.py create by v-zhidu
 """
 from abc import abstractmethod
 
-from ..spider_logging import SpiderLogging
+from spider_logging import SpiderLogging
 
 
 class SpiderQueueBase(object):

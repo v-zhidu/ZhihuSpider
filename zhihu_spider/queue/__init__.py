@@ -6,3 +6,4 @@ __init__.py create by v-zhidu
 """
 from .spider_queue_base import SpiderQueueBase
 from .spider_queue import SpiderQueue
+from .spider_queue_redis import SpiderQueueRedis
