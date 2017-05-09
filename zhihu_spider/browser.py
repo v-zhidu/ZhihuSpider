@@ -79,7 +79,7 @@ class Browser(object):
             self._logger.error(
                 'URLError - message=%s url=%s', e.reason, url)
 
-    def topic_list(self, url, topic_id, off_set=0, delay=0):
+    def topic_list(self, url, topic_id, off_set=0, timeout=10, delay=0):
         """Summary of method here.
 
         Logger method information
@@ -103,7 +103,7 @@ class Browser(object):
 
             data = urllib.urlencode(data)
             request = urllib2.Request(url, data)
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, timeout=timeout)
 
             return response
         except urllib2.HTTPError as e:
