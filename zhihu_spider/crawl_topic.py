@@ -10,11 +10,10 @@ from __future__ import unicode_literals
 import json
 from urlparse import urljoin
 
-from queue import SpiderQueueRedis
 import spider_const as SpiderConst
+from queue import SpiderQueueRedis
 from browser import Browser
-from persisitence import SpiderRedis
-from persisitence import SpiderFile
+from persisitence import SpiderFile, SpiderRedis
 from spider_decorators import retry
 from spider_logging import SpiderLogging
 from spider_parser import SpiderParser
@@ -148,21 +147,22 @@ class CrawlTopic(object):
         """
         抓取
         """
-        while not self._queue.unvisited_url_empty():
-            url_to_do = self._queue.pop_unvisited_url()
-            self._logger.info('抓取页面 -> %s', url_to_do)
-            try:
-                self.download_topic_detail(url_to_do, save_file)
-            except Exception as e:
-                self._logger.error('抓取页面出错 -> %s, msg-> %s',
-                                   url_to_do, e.message)
-                self._queue.add_unvisited_url(url_to_do)
+        while True:
+            if not self._queue.unvisited_url_empty():
+                url_to_do = self._queue.pop_unvisited_url()
+                self._logger.info('抓取页面 -> %s', url_to_do)
+                try:
+                    self.download_topic_detail(url_to_do, save_file)
+                except Exception as e:
+                    self._logger.error('抓取页面出错 -> %s, msg-> %s',
+                                       url_to_do, e.message)
+                    self._queue.add_unvisited_url(url_to_do)
+                else:
+                    self._queue.add_visited_url(url_to_do)
             else:
-                self._queue.add_visited_url(url_to_do)
+                self._logger.info('没有要抓取的页面啦')
 
-        self._logger.info('没有要抓取的页面啦')
-
-    def run(self, save_file=False):
+    def find(self):
         """
         Control the process.
         """
@@ -189,7 +189,11 @@ class CrawlTopic(object):
         all_topics = reduce(lambda x, y: x + y, map(_find, seed_topics))
         self._logger.info('topics all count -> %s', len(all_topics))
 
-        self.download(save_file)
+    def run_multiprocess(self):
+        """
+        并发处理
+        """
+        self.find()
 
     @property
     def browser(self):
@@ -209,4 +213,4 @@ class CrawlTopic(object):
 if __name__ == '__main__':
 
     c = CrawlTopic()
-    c.download()
+    c.run_multiprocess()

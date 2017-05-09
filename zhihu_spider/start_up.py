@@ -7,7 +7,6 @@ Find topic information from zhihu.com
 zhihu_spider.py create by v-zhidu
 """
 from __future__ import unicode_literals
-
 from crawl_topic import CrawlTopic
 from spider_logging import SpiderLogging
 
@@ -27,7 +26,7 @@ class StartUp(object):
         topic = CrawlTopic()
 
         self._logger.info('Release spider!!!')
-        topic.run()
+        topic.run_multiprocess()
         self._logger.info('Done!')
 
 

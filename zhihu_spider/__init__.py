@@ -6,7 +6,7 @@ __init__.py create by v-zhidu
 
 import logging
 
-from .zhihu_spider import ZhihuSpider
+from .start_up import StartUp
 
 __version__ = '0.1.0'
 __author__ = 'v-zhidu'
