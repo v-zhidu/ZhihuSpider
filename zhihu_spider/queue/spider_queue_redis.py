@@ -42,7 +42,7 @@ class SpiderQueueRedis(SpiderQueueBase):
         """
         添加未访问的url
         """
-        if not self.is_visited_url:
+        if not self.is_visited_url(url):
             return self._redis.rpush(spider_const.TOPICS_QUEUE_UNVISITED, url)
         else:
             return self._redis.llen(spider_const.TOPICS_QUEUE_UNVISITED)
