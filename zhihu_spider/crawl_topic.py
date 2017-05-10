@@ -8,8 +8,6 @@ crawl_topic.py create by v-zhidu
 from __future__ import unicode_literals
 
 import json
-import threading
-import time
 from urlparse import urljoin
 
 import spider_const as SpiderConst
@@ -111,7 +109,7 @@ class CrawlTopic(object):
 
         return topics
 
-    def save_topic_detail_to_file(self, file_name, html):
+    def _save_topic_detail_to_file(self, file_name, html):
         """
         持久化话题详情数据
         """
@@ -120,7 +118,7 @@ class CrawlTopic(object):
         self._logger.debug('download file: %s.html', file_name)
         self._file_persistence.save_to_file(path, html)
 
-    def save_topic_to_database(self, url, html):
+    def _save_topic_to_database(self, url, html):
         """
         持久化话题详情数据
         """
@@ -128,7 +126,7 @@ class CrawlTopic(object):
         self._logger.debug('download file: %s.html', url)
         self._persistence.hset(SpiderConst.TOPICS_HTML, url, html)
 
-    def download_topic_detail(self, url, save_file=False):
+    def _download_topic_detail(self, url, save_file=False):
         """
         下载话题详情页面
         """
@@ -139,10 +137,10 @@ class CrawlTopic(object):
 
         # 持久化
         if save_file:
-            self.save_topic_detail_to_file(
+            self._save_topic_detail_to_file(
                 url, response.read())
         else:
-            self.save_topic_to_database(url, response.read())
+            self._save_topic_to_database(url, response.read())
         return response.read()
 
     def consumer(self, save_file=False):
@@ -154,7 +152,7 @@ class CrawlTopic(object):
                 url_to_do = self._queue.pop_unvisited_url()
                 self._logger.info('抓取页面 -> %s', url_to_do)
                 try:
-                    self.download_topic_detail(url_to_do, save_file)
+                    self._download_topic_detail(url_to_do, save_file)
                 except Exception as e:
                     self._logger.error('抓取页面出错 -> %s, msg-> %s',
                                        url_to_do, e.message)
@@ -162,8 +160,7 @@ class CrawlTopic(object):
                 else:
                     self._queue.add_visited_url(url_to_do)
             else:
-                # self._logger.info('没有要抓取的页面啦')
-                pass
+                self._logger.info('没有要抓取的页面啦')
 
     def producer(self):
         """
@@ -187,45 +184,13 @@ class CrawlTopic(object):
                 self._queue.add_unvisited_url(
                     urljoin(SpiderConst.ZHIHU_HOST, topic.url))
 
-            return topics
+            return len(topics)
 
-        all_topics = reduce(lambda x, y: x + y, map(_find, seed_topics))
-        # 测试用
-        # all_topics = reduce(lambda x, y: x + y, map(_find,
-        #                                             [Topic(topic_id=253, name='游戏', url='#游戏')]))
-        self._logger.info('topics all count -> %s', len(all_topics))
-
-    def run_multiprocess(self):
-        """
-        并发处理
-        """
-        self._logger.info('start process...')
-        producer = threading.Thread(target=self.producer)
-        consumer = threading.Thread(target=self.consumer)
-        producer.start()
-        consumer.start()
-
-        producer.join()
-        consumer.join()
-        self._logger.info('end process')
-
-    @property
-    def browser(self):
-        """
-        返回http客户端实例.
-        """
-        return self._browser
-
-    @property
-    def queue(self):
-        """
-        返回队列结构
-        """
-        return self._queue
+        count = reduce(lambda x, y: x + y, map(_find, seed_topics))
+        self._logger.info('topics all count -> %s', len(count))
 
 
 if __name__ == '__main__':
 
     c = CrawlTopic()
-    # c.run_multiprocess()
     c.consumer()
