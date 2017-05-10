@@ -40,7 +40,7 @@ class SpiderLogging(object):
         """
         # 设置样式
         formatter = logging.Formatter(
-            '%(asctime)s %(filename)s[line:%(lineno)d] %(thread)d - %(process)d %(levelname)s - %(message)s')
+            '%(asctime)s %(filename)s[line:%(lineno)d] %(process)d %(thread)d - %(levelname)s - %(message)s')
 
         # 控制台handler
         console_handler = logging.StreamHandler()
@@ -56,7 +56,7 @@ class SpiderLogging(object):
         """
         # 设置样式
         formatter = logging.Formatter(
-            '%(asctime)s %(filename)s[line:%(lineno)d] %(thread)d - %(process)d %(levelname)s - %(message)s')
+            '%(asctime)s %(filename)s[line:%(lineno)d] %(process)d %(thread)d -  %(levelname)s - %(message)s')
 
         # 控制台handler
         log_folder = './log/'
