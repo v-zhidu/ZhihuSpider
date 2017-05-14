@@ -15,7 +15,8 @@ class SpiderLogging(object):
     spider_logging.py create by v-zhidu
     """
 
-    def __init__(self, name):
+    def __init__(self, **kwargs):
+        name = kwargs.get('name', __name__)
         self._logger = logging.getLogger(name)
         self.configure_logging()
 
@@ -30,7 +31,7 @@ class SpiderLogging(object):
         """
         配置日志的具体方法
         """
-        self._logger.setLevel(logging.INFO)
+        self._logger.setLevel(logging.DEBUG)
         self.configure_console_handler()
         self.configure_file_handler()
 
@@ -77,6 +78,6 @@ class SpiderLogging(object):
 
 
 if __name__ == '__main__':
-    logger = SpiderLogging('test').logger
+    logger = SpiderLogging(name='a').logger
     logger.info('this is a info messages.')
     logger.debug('this is a info messages.')

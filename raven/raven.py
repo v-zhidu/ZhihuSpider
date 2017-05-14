@@ -22,3 +22,5 @@ class Raven(object):
 
         # import class
         self._client = initialize_class(http_client, **kwargs)
+
+        print self._client.get('http://www.baidu.com')
