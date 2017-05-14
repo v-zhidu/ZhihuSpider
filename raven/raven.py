@@ -22,9 +22,3 @@ class Raven(object):
 
         # import class
         self._client = initialize_class(http_client, **kwargs)
-
-
-if __name__ == '__main__':
-    import sys
-    sys.path.append('D:\\Code\\raven_spider\\raven\\http_client\\')
-    a = Raven('a')
